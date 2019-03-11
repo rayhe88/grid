@@ -29,14 +29,17 @@ __all__ = ['becke_helper_atom']
 
 def distanceBecke( point0, point1 ):
     """ Computes the distance between 2 points in the space xyz 
-        Parameters
-        ----------
+
+        **Arguments**
 
         point0 :
-            The coordinates of the first point
+            The coordinates XYZ of the first point. Numpy array
+            with shape (3,)
 
         point1 :
-            The coordinates of the second point
+            The coordinates XYZ of the second point. Numpy array
+            with shape (3,)
+
     """
     tmp  = (point1[0] - point0[0])**2 
     tmp += (point1[1] - point0[1])**2 
