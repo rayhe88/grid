@@ -33,7 +33,7 @@ from libc.stdlib cimport malloc, free
 cimport libcpp
 
 cimport lebedev_laikov
-cimport becke
+#cimport becke
 cimport cubic_spline
 cimport evaluate
 cimport ode2
@@ -48,7 +48,7 @@ __all__ = [
     # lebedev_laikov
     'lebedev_laikov_npoints', 'lebedev_laikov_lmaxs', 'lebedev_laikov_sphere',
     # becke
-    'becke_helper_atom',
+    #'becke_helper_atom',
     # cubic_spline
     'Extrapolation', 'ZeroExtrapolation', 'CuspExtrapolation',
     'PowerExtrapolation', 'PotentialExtrapolation', 'tridiagsym_solve', 'CubicSpline',
@@ -128,56 +128,56 @@ def lebedev_laikov_sphere(np.ndarray[double, ndim=2] points not None,
 #
 
 
-def becke_helper_atom(np.ndarray[double, ndim=2] points not None,
-                      np.ndarray[double, ndim=1] weights not None,
-                      np.ndarray[double, ndim=1] radii not None,
-                      np.ndarray[double, ndim=2] centers not None,
-                      int select, int order):
-    """beck_helper_atom(points, weights, radii, centers, i, k)
+#def becke_helper_atom(np.ndarray[double, ndim=2] points not None,
+#                      np.ndarray[double, ndim=1] weights not None,
+#                      np.ndarray[double, ndim=1] radii not None,
+#                      np.ndarray[double, ndim=2] centers not None,
+#                      int select, int order):
+#    """beck_helper_atom(points, weights, radii, centers, i, k)
+#
+#       Compute the Becke weights for a given atom an a grid.
+#
+#       **Arguments:**
+#
+#       points
+#            The Cartesian coordinates of the grid points. Numpy array with
+#            shape (npoint, 3)
+#
+#       weights
+#            The output array where the Becke partitioning weights are written.
+#            Numpy array with shape (npoint,)
+#
+#       radii
+#            The covalent radii used to shrink/enlarge basins in the Becke
+#            scheme.
+#
+#       centers
+#            The positions of the nuclei.
+#
+#       select
+#            The selected atom for which the weights should be created.
+#
+#       order
+#            The order of the switching functions. (That is k in Becke's paper.)
+#
+#       See Becke's paper for the details: http://dx.doi.org/10.1063/1.454033
+#    """
+#    assert points.flags['C_CONTIGUOUS']
+#    assert points.shape[1] == 3
+#    npoint = points.shape[0]
+#    assert weights.flags['C_CONTIGUOUS']
+#    assert weights.shape[0] == npoint
+#    assert radii.flags['C_CONTIGUOUS']
+#    natom = radii.shape[0]
+#    assert centers.flags['C_CONTIGUOUS']
+#    assert centers.shape[0] == natom
+#    assert centers.shape[1] == 3
+#    assert 0 <= select < natom
+#    assert order > 0
 
-       Compute the Becke weights for a given atom an a grid.
-
-       **Arguments:**
-
-       points
-            The Cartesian coordinates of the grid points. Numpy array with
-            shape (npoint, 3)
-
-       weights
-            The output array where the Becke partitioning weights are written.
-            Numpy array with shape (npoint,)
-
-       radii
-            The covalent radii used to shrink/enlarge basins in the Becke
-            scheme.
-
-       centers
-            The positions of the nuclei.
-
-       select
-            The selected atom for which the weights should be created.
-
-       order
-            The order of the switching functions. (That is k in Becke's paper.)
-
-       See Becke's paper for the details: http://dx.doi.org/10.1063/1.454033
-    """
-    assert points.flags['C_CONTIGUOUS']
-    assert points.shape[1] == 3
-    npoint = points.shape[0]
-    assert weights.flags['C_CONTIGUOUS']
-    assert weights.shape[0] == npoint
-    assert radii.flags['C_CONTIGUOUS']
-    natom = radii.shape[0]
-    assert centers.flags['C_CONTIGUOUS']
-    assert centers.shape[0] == natom
-    assert centers.shape[1] == 3
-    assert 0 <= select < natom
-    assert order > 0
-
-    becke.becke_helper_atom(points.shape[0], &points[0, 0], &weights[0], natom,
-                            &radii[0], &centers[0, 0], select, order)
-
+#    becke.becke_helper_atom(points.shape[0], &points[0, 0], &weights[0], natom,
+#                            &radii[0], &centers[0, 0], select, order)
+#
 
 #
 # cubic_spline
