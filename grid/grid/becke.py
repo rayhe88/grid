@@ -85,12 +85,12 @@ def becke_helper_atom( points, weights, radii, centers, select, order) :
     npoint = points.shape[0]
     natom  = radii.shape[0]
 
-    assert points.shape[1] == 3       "points does not have the right size!"
-    assert weights.shape[0] == npoint "weights does not have the right size!"
-    assert centers.shape[0] == natom  "centers does not have the right size!"
-    assert centers.shape[1] == 3      "centers does not have the right size!"
-    assert 0 <= select < natom        "select must be in the range [0, natom)"
-    assert order > 0                  "order must be greater than zero"
+    assert points.shape[1] == 3       ,"points does not have the right size!"
+    assert weights.shape[0] == npoint ,"weights does not have the right size!"
+    assert centers.shape[0] == natom  ,"centers does not have the right size!"
+    assert centers.shape[1] == 3      ,"centers does not have the right size!"
+    assert 0 <= select < natom        ,"select must be in the range [0, natom)"
+    assert order > 0                  ,"order must be greater than zero"
 
 #   Precompute the alpha parameters for each atom pair
     alphas = np.zeros( int( natom*(natom+1)/2 ) )
@@ -137,9 +137,9 @@ def becke_helper_atom( points, weights, radii, centers, select, order) :
             # diatomic switching function
                 
             # Diatomic switching function
-                s = (distanceBecke(points[itmp],centers[iatom]) - 
-                     distanceBecke(points[itmp],centers[jatom]))
-                     /atomic_dists[offset] # Eq. (11)
+                s = distanceBecke(points[itmp],centers[iatom]) - distanceBecke(points[itmp],centers[jatom])
+                     
+                s = s/atomic_dists[offset] # Eq. (11)
 
                 s = s + alphas[offset]*( 1 - 2*term )*( 1 - s**2) # Eq. (A2)
 
