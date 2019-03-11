@@ -19,130 +19,144 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-""" Computes de Becke weighting function for every point in the grid """
+""" Compute de Becke weighting function for every point in the grid """
 
 import numpy as np
 
 __all__ = ['becke_helper_atom']
 
 
-def distanceBecke( point0, point1 ):
-    """ Computes the distance between 2 points in the space xyz 
-        Parameters
-        ----------
+def distance(point0, point1):
+    """ Compute the distance between 2 points in the space xyz
 
-        point0 :
-            The coordinates of the first point
+        Arguments
+        ---------
 
-        point1 :
-            The coordinates of the second point
+        point0:
+            The coordinates XYZ of the first point. Numpy array
+            with shape (3,)
+
+        point1:
+            The coordinates XYZ of the second point. Numpy array
+            with shape (3,)
     """
-    tmp  = (point1[0] - point0[0])**2 
-    tmp += (point1[1] - point0[1])**2 
-    tmp += (point1[2] - point0[2])**2 
+
+    tmp = (point1[0] - point0[0])**2
+    tmp += (point1[1] - point0[1])**2
+    tmp += (point1[2] - point0[2])**2
 
     return np.sqrt(tmp)
-    
 
 
-def becke_helper_atom( npoint, points, weights, natom, radii, centers, select, order)
-    """ Computes the Becke weighting function for every point in the grid 
+def becke_helper_atom(points, weights, radii, centers, select, order):
+    """ Computes the Becke weights for a given atom in a grid
 
-        Parameters
-        ----------
+        Arguments
+        ---------
 
-        npoint :
-            The number of grid points.
+        points:
+            The Cartesian coordinates of the grid points.
+            Numpy array with shape (npoint,3)
 
-        points :
-            The grid points. Row-mayor storage of (npoint,3) array.
+        weights:
+            The output array where the Becke partitioning weights are
+            written. Becke weights are **multiplied** with the original
+            contents of the array!
+            Numpy array with shape (npoint,)
 
-        weights :
-            The output, i.e. the Becke weights for the grid points. Note that the
-            becke weights is **multiplied** with the original contents of the array!
-        
-        natom  :
-            The number of atoms.
+        radii:
+            The covalent radii used to shrink/enlarge basins in the
+            Becke scheme.
+            Numpy array with shape (natom,)
 
-        radii :
-            The radii of the atoms.
+        centers:
+            The Cartesian coordinates of the nuclei.
+            Numpy array with shape (natom,3)
 
-        centers :
-            The posicion of the atoms.
+        select:
+            The select atom for wich the Becke weights should be
+            computed.
+            Integer value.
 
-        select :
-            The select atom for wich the Becke weights are to be computed.
-
-        order :
+        order:
             The order of the switching function in the Becke scheme.
+            Integer value.
 
         See Becke's paper for the details:
         A. D. Becke, The Journal of Chemical Physics 88, 2547 (1988)
         URL http://dx.doi.org/10.1063/1.454033
     """
-    alphas = np.zeros( int( natom*(natom+1)/2 ) )
+
+    npoint = points.shape[0]
+    natom = radii.shape[0]
+
+    assert points.shape[1] == 3, "points does not have the right size!"
+    assert weights.shape[0] == npoint, "weights does not have the right size!"
+    assert centers.shape[0] == natom, "centers does not have the right size!"
+    assert centers.shape[1] == 3, "centers does not have the right size!"
+    assert 0 <= select < natom, "select must be in the range [0, natom)"
+    assert order > 0, "order must be greater than zero"
+
+# Precompute the alpha parameters for each atom pair
+    alphas = np.zeros(int(natom * (natom + 1) / 2))
     offset = 0
-    
-    for iatom in range( natom ) :
-        for jatom in range ( iatom+1 ) :
-            alpha = (radii[iatom] - radii[jatom])/(radii[iatom] + radii[jatom])
-            alpha = alpha/(alpha**2 -1)
-            if alpha > 0.45 :
-                 alpha = 0.45
-            elif alpha < -0.45 :
+    for iatom in range(natom):
+        for jatom in range(iatom + 1):
+            alpha = (radii[iatom] - radii[jatom]) / (radii[iatom] + radii[jatom])
+            alpha = alpha/(alpha**2 - 1)  # Eq. (A5)
+            # Eq. (A3), except that we use some safe margin
+            # (0.45 instead of 0.5) to stay way from a ridiculous imbalance.
+            if alpha > 0.45:
+                alpha = 0.45
+            elif alpha < -0.45:
                 alpha = -0.45
             alphas[offset] = alpha
             offset += 1
 
-#   Precompute interatomic distances
-    atomic_dists = np.zeros( int(natom*(natom+1)/2 ) )
+# Precompute interatomic distances
+    atomic_dists = np.zeros(int(natom * (natom + 1) / 2))
     offset = 0
 
-    for iatom in range( natom ) :
-        for jatom in range ( iatom+1) :
-            atomic_dists[offset] = distance( centers[3*iatom], centers[3*jatom] )
+    for iatom in range(natom):
+        for jatom in range(iatom + 1):
+            atomic_dists[offset] = distance(centers[iatom], centers[jatom])
             offset += 1
 
-#   Calculate the Becke Weights
-    for ipoint in range ( npoint-1,-1,-1 ) :
+# Calculate the Becke Weights
+    for ipoint in range(npoint - 1, -1, -1):
+        itmp = npoint - ipoint - 1
         num = 0
-        den = 0 
-        for iatom in range ( natom ) :
+        den = 0
+        for iatom in range(natom):
             p = 1
-            for jatom in range ( natom ) :
-                if iatom == jatom :
+            for jatom in range(natom):
+                if iatom == jatom:
                     continue
-            # compute offset for alpha and interatomic distance
-                if iatom < jatom :
-                    offset = int( jatom*(jatom+1)/2 ) + iatom
-                    term   = 1
+                # Compute offset for alpha and interatomic distance
+                if iatom < jatom:
+                    offset = int(jatom * (jatom+1) / 2) + iatom
+                    term = 1
                 else:
-                    offset = int( iatom*(iatom+1)/2 ) + jatom
-                    tem    = 0
-            # diatomic switching function
-            
-                s = (distance(points,centers[3*iatom]) - 
-                     distance(points,centers[3*jatom]))/atomic_dists[offset]
-                s = s + alphas[offset]*( 1 - 2*term )*( 1 - s**2)
+                    offset = int(iatom * (iatom+1) / 2) + jatom
+                    term = 0
 
-                for k in range (1,order+1)
-                    s = 0.5*s*(3-s**2)
+                # Diatomic switching function
+                s = distance(points[itmp], centers[iatom]) - \
+                    distance(points[itmp], centers[jatom])
+                s = s/atomic_dists[offset]  # Eq. (11)
+                s = s + alphas[offset]*(1 - 2*term)*(1 - s**2)  # Eq. (A2)
 
-                s = 0.5*(1-s)
+                for k in range(1, order + 1, 1):  # Eq. (19) and (20)
+                    s = 0.5 * s * (3 - s**2)
 
-                p *= s
+                s = 0.5 * (1 - s)  # Eq. (18)
 
-            if iatom == selec :
+                p *= s  # Eq. (13)
+
+            if iatom == select:
                 nom = p
-            
-            denom += p
 
-        weights[ipoint] *= num/den;
+            den += p  # Eq. (22)
 
-        points += 3
-
-        weights++
-
-    
-
-
+        # Weight function at this grid point
+        weights[itmp] *= (nom / den)  # Eq. (22)
