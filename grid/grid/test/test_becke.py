@@ -24,6 +24,7 @@ import numpy as np
 
 from grid.grid.becke import becke_helper_atom
 
+
 def test_becke_sum2_one():
     npoint = 100
     points = np.random.uniform(-5, 5, (npoint, 3))
