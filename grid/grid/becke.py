@@ -35,26 +35,12 @@ def distance(point0, point1):
         point0:
             The coordinates XYZ of the first point. Numpy array
             with shape (3,)
-<<<<<<< HEAD
 
         point1:
             The coordinates XYZ of the second point. Numpy array
             with shape (3,)
     """
     return np.sqrt(np.sum((point0 - point1)**2))
-=======
-
-        point1:
-            The coordinates XYZ of the second point. Numpy array
-            with shape (3,)
-    """
-
-    tmp = (point1[0] - point0[0])**2
-    tmp += (point1[1] - point0[1])**2
-    tmp += (point1[2] - point0[2])**2
-
-    return np.sqrt(tmp)
->>>>>>> b478ea8220e2b6cdfd90b9457a703b8b845a44e1
 
 
 def becke_helper_atom(points, weights, radii, centers, select, order):
@@ -112,11 +98,7 @@ def becke_helper_atom(points, weights, radii, centers, select, order):
     for iatom in range(natom):
         for jatom in range(iatom + 1):
             alpha = (radii[iatom] - radii[jatom]) / (radii[iatom] + radii[jatom])
-<<<<<<< HEAD
             alpha = alpha / (alpha**2 - 1)  # Eq. (A5)
-=======
-            alpha = alpha/(alpha**2 - 1)  # Eq. (A5)
->>>>>>> b478ea8220e2b6cdfd90b9457a703b8b845a44e1
             # Eq. (A3), except that we use some safe margin
             # (0.45 instead of 0.5) to stay way from a ridiculous imbalance.
             if alpha > 0.45:
@@ -147,29 +129,17 @@ def becke_helper_atom(points, weights, radii, centers, select, order):
                     continue
                 # Compute offset for alpha and interatomic distance
                 if iatom < jatom:
-<<<<<<< HEAD
                     offset = int((jatom * (jatom + 1) / 2)) + iatom
                     term = 1
                 else:
                     offset = int((iatom * (iatom + 1) / 2)) + jatom
-=======
-                    offset = int(jatom * (jatom+1) / 2) + iatom
-                    term = 1
-                else:
-                    offset = int(iatom * (iatom+1) / 2) + jatom
->>>>>>> b478ea8220e2b6cdfd90b9457a703b8b845a44e1
                     term = 0
 
                 # Diatomic switching function
                 s = distance(points[itmp], centers[iatom]) - \
                     distance(points[itmp], centers[jatom])
-<<<<<<< HEAD
                 s = s / atomic_dists[offset]  # Eq. (11)
-                s = s + alphas[offset] * (1 - 2 * term) * (1 - s**2)  # Eq. (A2)
-=======
-                s = s/atomic_dists[offset]  # Eq. (11)
-                s = s + alphas[offset]*(1 - 2*term)*(1 - s**2)  # Eq. (A2)
->>>>>>> b478ea8220e2b6cdfd90b9457a703b8b845a44e1
+                s += alphas[offset] * (1 - 2 * term) * (1 - s**2)  # Eq. (A2)
 
                 for k in range(1, order + 1, 1):  # Eq. (19) and (20)
                     s = 0.5 * s * (3 - s**2)
